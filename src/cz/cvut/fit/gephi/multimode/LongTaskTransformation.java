@@ -1,7 +1,6 @@
 package cz.cvut.fit.gephi.multimode;
 
 import java.util.*;
-import javax.swing.JComboBox;
 import org.gephi.data.attributes.api.AttributeColumn;
 import org.gephi.graph.api.*;
 import org.gephi.utils.longtask.spi.LongTask;
@@ -17,25 +16,26 @@ public class LongTaskTransformation implements LongTask, Runnable {
 
     private ProgressTicket progressTicket;
     private boolean cancelled = false;
-    private JComboBox columns;
-    private JComboBox firstMatrixCombo;
-    private JComboBox secondMatrixCombo;
+    
+    
+    private AttributeColumn attributeColumn = null;  
+    private String inDimension;
+    private String commonDimension;
+    private String outDimension;    
     private boolean removeEdges = true;
     private boolean removeNodes = true;
 
-    public LongTaskTransformation(JComboBox columns, JComboBox firstMatrixCombo, JComboBox secondMatrixCombo, boolean removeEdges, boolean removeNodes) {
-        this.columns = columns;
-        this.firstMatrixCombo = firstMatrixCombo;
-        this.secondMatrixCombo = secondMatrixCombo;
+    public LongTaskTransformation(AttributeColumn attributeColumn, String inDimension, String commonDimension, String outDimension, boolean removeEdges, boolean removeNodes) {
+        this.attributeColumn = attributeColumn;
+        this.inDimension = inDimension;
+        this.commonDimension = commonDimension;
+        this.outDimension = outDimension;        
         this.removeEdges = removeEdges;
         this.removeNodes = removeNodes;
     }
 
     @Override
-    public void run() {
-        // get selected combination
-        ValueCombination firstCombination = (ValueCombination) firstMatrixCombo.getSelectedItem();
-        ValueCombination secondCombination = (ValueCombination) secondMatrixCombo.getSelectedItem();
+    public void run() {        
 
         // number of tickets
         Progress.start(progressTicket, 5);
@@ -47,28 +47,22 @@ public class LongTaskTransformation implements LongTask, Runnable {
         //Graph graph = graphModel.getUndirectedGraphVisible();
         Node[] nodes = graph.getNodes().toArray();
 
-        // first matrix axis
+        // matrix axis
         List<Node> firstHorizontal = new ArrayList<Node>();
         List<Node> firstVertical = new ArrayList<Node>();
         List<Node> secondHorizontal = new ArrayList<Node>();
         List<Node> secondVertical = new ArrayList<Node>();
         for (Node n : nodes) {
-            String nodeValue = Utils.getValue(n, (AttributeColumn) columns.getSelectedItem()).toString();
-            // first matrix axis
-            if (nodeValue.equals(firstCombination.getFirst())) {
+            String nodeValue = Utils.getValue(n, attributeColumn).toString();
+            // matrix axis
+            if (nodeValue.equals(inDimension)) {
                 firstVertical.add(n);
             }
-            if (nodeValue.equals(firstCombination.getSecond())) {
+            if (nodeValue.equals(commonDimension)) {
                 firstHorizontal.add(n);
                 secondVertical.add(n);
-            }
-            // second matrix axis
-            /*
-             * if (nodeValue.equals(secondCombination.getFirst())) {
-             * secondVertical.add(n); }
-             *
-             */
-            if (nodeValue.equals(secondCombination.getSecond())) {
+            }            
+            if (nodeValue.equals(outDimension)) {
                 secondHorizontal.add(n);
             }
         }
@@ -114,26 +108,9 @@ public class LongTaskTransformation implements LongTask, Runnable {
         if (cancelled) {
             return;
         }
-        Progress.progress(progressTicket, "Multiplication");
-        //System.out.println(firstVertical);
-        //System.out.println(firstHorizontal);
-        //System.out.println(firstMatrix);
-        //System.out.println("");
-        //System.out.println(secondVertical);
-        //System.out.println(secondHorizontal);
-        //System.out.println(secondMatrix);
+        Progress.progress(progressTicket, "Multiplication");                
 
-        //long start = System.currentTimeMillis();
-        //Matrix result = firstMatrix.times(secondMatrix);
-        //long end = System.currentTimeMillis();
-        //System.out.println("start "+start+" end "+end+" = "+ (end-start));
-        
-        //start = System.currentTimeMillis();
         Matrix result = firstMatrix.timesParallel(secondMatrix);
-        //end = System.currentTimeMillis();
-        //System.out.println("start "+start+" end "+end+" = "+ (end-start));
-        
-        //System.out.println(result);
         if (cancelled) {
             return;
         }
@@ -175,18 +152,12 @@ public class LongTaskTransformation implements LongTask, Runnable {
                 if (graph.contains(firstVertical.get(i)) && graph.contains(secondHorizontal.get(j)) && graph.getEdge(firstVertical.get(i), secondHorizontal.get(j)) == null && result.get(i, j) > 0) {
                     ee = graphModel.factory().newEdge(firstVertical.get(i), secondHorizontal.get(j), (float) result.get(i, j), false);
                     if (!ee.isSelfLoop()) {
-                        ee.getEdgeData().setLabel(firstCombination.getFirst() + "-" + secondCombination.getSecond());
+                        ee.getEdgeData().setLabel(inDimension + "-" + outDimension);
                         graph.addEdge(ee);
                     }
                 }
             }
-        }
-
-        if (columns.getItemCount() > 0 && (removeEdges || removeNodes)) {
-            firstMatrixCombo.removeAllItems();
-            secondMatrixCombo.removeAllItems();
-            columns.setSelectedIndex(columns.getSelectedIndex());
-        }
+        }        
         Progress.finish(progressTicket);
     }
 

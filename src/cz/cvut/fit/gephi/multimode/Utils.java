@@ -12,6 +12,7 @@ public class Utils {
 
     /**
      * get value of atrribute colmn from node
+     *
      * @param node
      * @param column
      * @return value of attribute
