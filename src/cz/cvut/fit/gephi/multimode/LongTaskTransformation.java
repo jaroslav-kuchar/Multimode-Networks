@@ -2,6 +2,9 @@ package cz.cvut.fit.gephi.multimode;
 
 import java.util.*;
 import org.gephi.data.attributes.api.AttributeColumn;
+import org.gephi.data.attributes.api.AttributeController;
+import org.gephi.data.attributes.api.AttributeModel;
+import org.gephi.data.attributes.api.AttributeType;
 import org.gephi.graph.api.*;
 import org.gephi.utils.longtask.spi.LongTask;
 import org.gephi.utils.progress.Progress;
@@ -16,12 +19,10 @@ public class LongTaskTransformation implements LongTask, Runnable {
 
     private ProgressTicket progressTicket;
     private boolean cancelled = false;
-    
-    
-    private AttributeColumn attributeColumn = null;  
+    private AttributeColumn attributeColumn = null;
     private String inDimension;
     private String commonDimension;
-    private String outDimension;    
+    private String outDimension;
     private boolean removeEdges = true;
     private boolean removeNodes = true;
 
@@ -29,14 +30,13 @@ public class LongTaskTransformation implements LongTask, Runnable {
         this.attributeColumn = attributeColumn;
         this.inDimension = inDimension;
         this.commonDimension = commonDimension;
-        this.outDimension = outDimension;        
+        this.outDimension = outDimension;
         this.removeEdges = removeEdges;
         this.removeNodes = removeNodes;
     }
 
     @Override
-    public void run() {        
-
+    public void run() {
         // number of tickets
         Progress.start(progressTicket, 5);
 
@@ -53,7 +53,13 @@ public class LongTaskTransformation implements LongTask, Runnable {
         List<Node> secondHorizontal = new ArrayList<Node>();
         List<Node> secondVertical = new ArrayList<Node>();
         for (Node n : nodes) {
-            String nodeValue = Utils.getValue(n, attributeColumn).toString();
+            String nodeValue = null;
+            Object val = Utils.getValue(n, attributeColumn);
+            if (val != null) {
+                nodeValue = val.toString();
+            } else {
+                nodeValue = "null";
+            }
             // matrix axis
             if (nodeValue.equals(inDimension)) {
                 firstVertical.add(n);
@@ -61,7 +67,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
             if (nodeValue.equals(commonDimension)) {
                 firstHorizontal.add(n);
                 secondVertical.add(n);
-            }            
+            }
             if (nodeValue.equals(outDimension)) {
                 secondHorizontal.add(n);
             }
@@ -108,7 +114,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
         if (cancelled) {
             return;
         }
-        Progress.progress(progressTicket, "Multiplication");                
+        Progress.progress(progressTicket, "Multiplication");
 
         Matrix result = firstMatrix.timesParallel(secondMatrix);
         if (cancelled) {
@@ -145,6 +151,9 @@ public class LongTaskTransformation implements LongTask, Runnable {
             return;
         }
         Progress.progress(progressTicket, "Creating new edges");
+        AttributeController ac = Lookup.getDefault().lookup(AttributeController.class);
+        AttributeModel model = ac.getModel();        
+        AttributeColumn edgeTypeCol = model.getEdgeTable().addColumn("MMNT-EdgeType", AttributeType.STRING);
 
         Edge ee = null;
         for (int i = 0; i < result.getM(); i++) {
@@ -152,12 +161,13 @@ public class LongTaskTransformation implements LongTask, Runnable {
                 if (graph.contains(firstVertical.get(i)) && graph.contains(secondHorizontal.get(j)) && graph.getEdge(firstVertical.get(i), secondHorizontal.get(j)) == null && result.get(i, j) > 0) {
                     ee = graphModel.factory().newEdge(firstVertical.get(i), secondHorizontal.get(j), (float) result.get(i, j), false);
                     if (!ee.isSelfLoop()) {
-                        ee.getEdgeData().setLabel(inDimension + "-" + outDimension);
+                        ee.getEdgeData().getAttributes().setValue(edgeTypeCol.getIndex(), inDimension + "<--->" + outDimension);
+                        //ee.getEdgeData().setLabel(inDimension + "-" + outDimension);
                         graph.addEdge(ee);
                     }
                 }
             }
-        }        
+        }
         Progress.finish(progressTicket);
     }
 

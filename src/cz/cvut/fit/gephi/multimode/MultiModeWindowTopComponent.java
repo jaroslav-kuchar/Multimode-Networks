@@ -186,8 +186,13 @@ public final class MultiModeWindowTopComponent extends TopComponent {
             Graph graph = graphController.getModel().getGraphVisible();
             Node[] nodes = graph.getNodes().toArray();
             Set<String> vals = new HashSet<String>();
-            for (Node n : nodes) {
-                vals.add(Utils.getValue(n, col).toString());
+            for (Node n : nodes) {                
+                Object val = Utils.getValue(n, col);
+                if(val!=null){
+                    vals.add(val.toString());
+                } else {
+                    vals.add("null");
+                }
             }
             // add combinations
             for (String left : vals) {
@@ -214,7 +219,12 @@ public final class MultiModeWindowTopComponent extends TopComponent {
             Node[] nodes = graph.getNodes().toArray();
             Set<String> vals = new HashSet<String>();
             for (Node n : nodes) {
-                vals.add(Utils.getValue(n, col).toString());
+                Object val = Utils.getValue(n, col);
+                if(val!=null){
+                    vals.add(val.toString());
+                } else {
+                    vals.add("null");
+                }
             }
             // add combination with right dimension on left side
             for (String left : vals) {
