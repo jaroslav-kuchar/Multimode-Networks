@@ -13,8 +13,8 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
  * Top component which displays something.
@@ -32,9 +32,9 @@ persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_MultiModeWindowAction",
 preferredID = "MultiModeWindowTopComponent")
 @Messages({
-    "CTL_MultiModeWindowAction=MultiMode Transformations",
-    "CTL_MultiModeWindowTopComponent=MultiMode Networks Transformation",
-    "HINT_MultiModeWindowTopComponent=Enables transformation of multimode networks"
+    "CTL_MultiModeWindowAction=MultiMode Projections",
+    "CTL_MultiModeWindowTopComponent=MultiMode Networks Projection",
+    "HINT_MultiModeWindowTopComponent=Enables projection of multimode networks"
 })
 
 /**

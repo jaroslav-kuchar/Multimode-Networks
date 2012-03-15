@@ -116,7 +116,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
         }
         Progress.progress(progressTicket, "Multiplication");
 
-        Matrix result = firstMatrix.timesParallel(secondMatrix);
+        Matrix result = firstMatrix.timesParallelIndexed(secondMatrix);
         if (cancelled) {
             return;
         }
@@ -152,8 +152,12 @@ public class LongTaskTransformation implements LongTask, Runnable {
         }
         Progress.progress(progressTicket, "Creating new edges");
         AttributeController ac = Lookup.getDefault().lookup(AttributeController.class);
-        AttributeModel model = ac.getModel();        
-        AttributeColumn edgeTypeCol = model.getEdgeTable().addColumn("MMNT-EdgeType", AttributeType.STRING);
+        AttributeModel model = ac.getModel();  
+        AttributeColumn edgeTypeCol = model.getEdgeTable().getColumn("MMNT-EdgeType");        
+        if(edgeTypeCol==null){
+            edgeTypeCol = model.getEdgeTable().addColumn("MMNT-EdgeType", AttributeType.STRING);
+        }
+        
 
         Edge ee = null;
         for (int i = 0; i < result.getM(); i++) {
