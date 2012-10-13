@@ -6,7 +6,8 @@ This plugin allows multimode networks projection. You can project your bipartite
 
 This version contains:
 
-  * TBD
+  * Projection of network
+  * Graph coloring for bipartite network
 
 # Tutorial
 
@@ -18,4 +19,5 @@ Transformation is available in menu: Window -> MultiMode Projections
 4.  You can decide to remove nodes, edges
 5.  Run!
 
-TBD
+For bipartite network you can color your graph and generate "color" attribute in order to use it in this plugin for projection.
+At the same time tou can check if your graph is bipartite. 

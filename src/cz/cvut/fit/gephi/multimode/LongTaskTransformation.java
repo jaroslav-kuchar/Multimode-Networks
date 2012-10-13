@@ -16,7 +16,7 @@ import org.openide.util.Lookup;
  * @author Jaroslav Kuchar
  */
 public class LongTaskTransformation implements LongTask, Runnable {
-
+    
     private ProgressTicket progressTicket;
     private boolean cancelled = false;
     private AttributeColumn attributeColumn = null;
@@ -25,7 +25,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
     private String outDimension;
     private boolean removeEdges = true;
     private boolean removeNodes = true;
-
+    
     public LongTaskTransformation(AttributeColumn attributeColumn, String inDimension, String commonDimension, String outDimension, boolean removeEdges, boolean removeNodes) {
         this.attributeColumn = attributeColumn;
         this.inDimension = inDimension;
@@ -34,7 +34,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
         this.removeEdges = removeEdges;
         this.removeNodes = removeNodes;
     }
-
+    
     @Override
     public void run() {
         // number of tickets
@@ -72,7 +72,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
                 secondHorizontal.add(n);
             }
         }
-
+        
         if (cancelled) {
             return;
         }
@@ -97,7 +97,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
         // second matrix
         Matrix secondMatrix = new Matrix(secondVertical.size(), secondHorizontal.size());
         for (int i = 0; i < secondVertical.size(); i++) {
-
+            
             Set<Node> intersection = new HashSet<Node>(Arrays.asList(graph.getNeighbors(secondVertical.get(i)).toArray()));
             if (intersection != null && intersection.size() > 0) {
                 try {
@@ -115,14 +115,14 @@ public class LongTaskTransformation implements LongTask, Runnable {
             return;
         }
         Progress.progress(progressTicket, "Multiplication");
-
+        
         Matrix result = firstMatrix.timesParallelIndexed(secondMatrix);
         if (cancelled) {
             return;
         }
         Progress.progress(progressTicket, "Removing nodes/edges");
-
-
+        
+        
         if (removeNodes) {
             for (Node n : firstHorizontal) {
                 graph.removeNode(n);
@@ -136,7 +136,7 @@ public class LongTaskTransformation implements LongTask, Runnable {
                         }
                     }
                 }
-
+                
                 for (int i = 0; i < secondMatrix.getM(); i++) {
                     for (int j = 0; j < secondMatrix.getN(); j++) {
                         if (graph.contains(secondVertical.get(i)) && graph.contains(secondHorizontal.get(j)) && graph.getEdge(secondVertical.get(i), secondHorizontal.get(j)) != null && secondMatrix.get(i, j) > 0) {
@@ -146,24 +146,24 @@ public class LongTaskTransformation implements LongTask, Runnable {
                 }
             }
         }
-
+        
         if (cancelled) {
             return;
         }
         Progress.progress(progressTicket, "Creating new edges");
         AttributeController ac = Lookup.getDefault().lookup(AttributeController.class);
-        AttributeModel model = ac.getModel();  
+        AttributeModel model = ac.getModel();        
         AttributeColumn edgeTypeCol = model.getEdgeTable().getColumn("MMNT-EdgeType");        
-        if(edgeTypeCol==null){
+        if (edgeTypeCol == null) {
             edgeTypeCol = model.getEdgeTable().addColumn("MMNT-EdgeType", AttributeType.STRING);
         }
         
-
+        
         Edge ee = null;
         for (int i = 0; i < result.getM(); i++) {
             for (int j = 0; j < result.getN(); j++) {
                 if (graph.contains(firstVertical.get(i)) && graph.contains(secondHorizontal.get(j)) && graph.getEdge(firstVertical.get(i), secondHorizontal.get(j)) == null && result.get(i, j) > 0) {
-                    ee = graphModel.factory().newEdge(firstVertical.get(i), secondHorizontal.get(j), (float) result.get(i, j), false);
+                    ee = graphModel.factory().newEdge(firstVertical.get(i), secondHorizontal.get(j), (float) result.get(i, j), graphModel.isDirected());
                     if (!ee.isSelfLoop()) {
                         ee.getEdgeData().getAttributes().setValue(edgeTypeCol.getIndex(), inDimension + "<--->" + outDimension);
                         //ee.getEdgeData().setLabel(inDimension + "-" + outDimension);
@@ -174,13 +174,13 @@ public class LongTaskTransformation implements LongTask, Runnable {
         }
         Progress.finish(progressTicket);
     }
-
+    
     @Override
     public boolean cancel() {
         cancelled = true;
         return true;
     }
-
+    
     @Override
     public void setProgressTicket(ProgressTicket pt) {
         this.progressTicket = pt;

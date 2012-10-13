@@ -2,6 +2,7 @@ package cz.cvut.fit.gephi.multimode;
 
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JOptionPane;
 import org.gephi.data.attributes.api.AttributeColumn;
 import org.gephi.data.attributes.api.AttributeController;
 import org.gephi.data.attributes.api.AttributeModel;
@@ -36,7 +37,6 @@ preferredID = "MultiModeWindowTopComponent")
     "CTL_MultiModeWindowTopComponent=MultiMode Networks Projection",
     "HINT_MultiModeWindowTopComponent=Enables projection of multimode networks"
 })
-
 /**
  * @author Jaroslav Kuchar
  */
@@ -67,6 +67,9 @@ public final class MultiModeWindowTopComponent extends TopComponent {
         rightLabel = new javax.swing.JLabel();
         start = new javax.swing.JButton();
         load = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        graphColoring = new javax.swing.JButton();
+        bipartiteLabel = new javax.swing.JLabel();
 
         attributes.setToolTipText(org.openide.util.NbBundle.getMessage(MultiModeWindowTopComponent.class, "MultiModeWindowTopComponent.attributes.toolTipText")); // NOI18N
         attributes.setEnabled(false);
@@ -114,13 +117,19 @@ public final class MultiModeWindowTopComponent extends TopComponent {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(graphColoring, org.openide.util.NbBundle.getMessage(MultiModeWindowTopComponent.class, "MultiModeWindowTopComponent.graphColoring.text")); // NOI18N
+        graphColoring.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                graphColoringActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(bipartiteLabel, org.openide.util.NbBundle.getMessage(MultiModeWindowTopComponent.class, "MultiModeWindowTopComponent.bipartiteLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(load)
-                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -138,13 +147,23 @@ public final class MultiModeWindowTopComponent extends TopComponent {
                                     .addComponent(rightLabel))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(secondMatrix, 0, 190, Short.MAX_VALUE)
+                                    .addComponent(secondMatrix, 0, 191, Short.MAX_VALUE)
                                     .addComponent(firstMatrix, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(attributes, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(start)))
+                                .addComponent(start))
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addContainerGap())))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(load)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(graphColoring)
+                        .addGap(32, 32, 32)
+                        .addComponent(bipartiteLabel)))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -169,7 +188,13 @@ public final class MultiModeWindowTopComponent extends TopComponent {
                 .addComponent(removeNodes)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(start)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(graphColoring)
+                    .addComponent(bipartiteLabel))
+                .addContainerGap(60, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -186,9 +211,9 @@ public final class MultiModeWindowTopComponent extends TopComponent {
             Graph graph = graphController.getModel().getGraphVisible();
             Node[] nodes = graph.getNodes().toArray();
             Set<String> vals = new HashSet<String>();
-            for (Node n : nodes) {                
+            for (Node n : nodes) {
                 Object val = Utils.getValue(n, col);
-                if(val!=null){
+                if (val != null) {
                     vals.add(val.toString());
                 } else {
                     vals.add("null");
@@ -220,7 +245,7 @@ public final class MultiModeWindowTopComponent extends TopComponent {
             Set<String> vals = new HashSet<String>();
             for (Node n : nodes) {
                 Object val = Utils.getValue(n, col);
-                if(val!=null){
+                if (val != null) {
                     vals.add(val.toString());
                 } else {
                     vals.add("null");
@@ -268,10 +293,20 @@ public final class MultiModeWindowTopComponent extends TopComponent {
         firstMatrix.setEnabled(true);
         secondMatrix.setEnabled(true);
     }//GEN-LAST:event_loadActionPerformed
+
+    private void graphColoringActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_graphColoringActionPerformed
+        // TODO add your handling code here:
+        GraphColoring gc = new GraphColoring();
+        boolean bipartite = gc.bipartite();
+        bipartiteLabel.setText("Bipartite: " + bipartite);
+    }//GEN-LAST:event_graphColoringActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel attributeLabel;
     private javax.swing.JComboBox attributes;
+    private javax.swing.JLabel bipartiteLabel;
     private javax.swing.JComboBox firstMatrix;
+    private javax.swing.JButton graphColoring;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel leftlabel;
     private javax.swing.JButton load;
     private javax.swing.JCheckBox removeEdges;
